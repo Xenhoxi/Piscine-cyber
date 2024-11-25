@@ -9,9 +9,18 @@ def main():
             assert sys.argv == 1, "Not enought parameters !"
         else:
             data = parser(sys.argv)
-            print(data)
+        if url_ok(data.url):
+            get_img_from_url(data.url)
     except AssertionError as err:
         print(err)
+
+
+def get_img_from_url():
+    pass
+
+
+def url_ok():
+    return (1)
 
 
 def has_duplicate(string):
