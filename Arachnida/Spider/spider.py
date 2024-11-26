@@ -1,10 +1,12 @@
 import sys
 import argparse
+import os
+from curl_cffi import requests as cureq
+from bs4 import BeautifulSoup
 
 
 def main():
     try:
-        print(sys.argv)
         if (len(sys.argv) <= 1):
             assert sys.argv == 1, "Not enought parameters !"
         else:
@@ -15,12 +17,36 @@ def main():
         print(err)
 
 
-def get_img_from_url():
-    pass
+def get_img_from_url(url):
+    print(url)
+    req = cureq.get(url, impersonate='chrome')
+    print(req.status_code)
+    soup = BeautifulSoup(req.text, "html.parser")
+    all_img = soup.find_all("img")
+    for img in all_img:
+        src = img.get('src')
+        if src:
+            if str(src).endswith(('.png', '.jpg', '.jpeg', '.jpeg', '.gif', '.bmp')):
+                img_req = cureq.get(str(src), impersonate='chrome')
+                print(str(src), img_req.status_code)
+                if img_req.status_code == 200:
+                    with open("./data/" + os.path.basename(str(src)), "wb") as file:
+                        file.write(img_req.content)
+                else:
+                    img_req = cureq.get(os.path.dirname(url) + '/' + str(src), impersonate='chrome')
+                    print(os.path.dirname(url) + '/' + str(src), img_req.status_code)
+                    if img_req.status_code == 200:
+                        with open("./data/" + os.path.basename(str(src)), "wb") as file:
+                            file.write(img_req.content)
 
 
-def url_ok():
-    return (1)
+def url_ok(url):
+    try:
+        cureq.get(url, impersonate='chrome')
+        return 1
+    except Exception:
+        print("Impossible to access the url")
+        return 0
 
 
 def has_duplicate(string):
